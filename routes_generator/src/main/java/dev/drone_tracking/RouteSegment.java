@@ -32,5 +32,15 @@ public class RouteSegment {
         return rotatedCwAngle;
     }
 
+    public org.locationtech.spatial4j.shape.Point getStartingPoint() {
+        return convertFromWebMercatorToWG84(currentSegment.getCoordinateN(0));
+    }
+  
+    @Override
+    public String toString() {
+        return String.format( "%s -> %s",
+        currentSegment.getCoordinateN(0).toString(), currentSegment.getCoordinateN(1).toString());
+    }
+
 
 }
