@@ -68,14 +68,15 @@ public class FlightImitation implements Iterable<Point> {
                 str.append(Utils.formatSpacialPoint(point, 5));
                 str.append(" Nearest route point ");
                 str.append(Utils.formatSpacialPoint(pointToRouteMetrics.nearestPoint(), 5));
-                str.append(" Dist. " + String.valueOf(pointToRouteMetrics.minDistance()));
+                str.append( String.format(" Dist. %.1f", pointToRouteMetrics.minDistance()));
+//                str.append(String.format(" Azimuth: %.1f", currentRouteSegment.getAzimithToTheEndPointOfCurrentSegment(point)));
                 System.out.println(str.toString());
             }
 
             private Point getNextPoint() {
-                double driftAngle = Utils.getDriftAngle();
+                double driftAngle = Utils.getDriftAngle(0.7,10);
                 return Utils.distanceCalculator.pointOnBearing(next, NEXT_POINT_DELTA_DEG,
-                        currentRouteSegment.getAzimithToTheEndPointOfCurrentSegment(next) + driftAngle, Utils.ctx,
+                        currentRouteSegment.getBetterAzimuth(next, 200) + driftAngle, Utils.ctx,
                         null);
             }
 
