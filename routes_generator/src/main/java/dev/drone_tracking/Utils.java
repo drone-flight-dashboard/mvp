@@ -26,8 +26,6 @@ public class Utils {
     static final GeometryFactory geometryFactory = new GeometryFactory();
     static final DistanceCalculator distanceCalculator = new Haversine();
     static private Random random = new Random();
-     static private final double NEXT_POINT_DELTA_METERS = 50;
-    static private final double NEXT_POINT_DELTA_DEG = NEXT_POINT_DELTA_METERS / 1000 * KM_TO_DEG;
 
     static Coordinate convertFromWG84ToWebMercator(org.locationtech.spatial4j.shape.Point coordinate) {
         final CoordinateReferenceSystem sourceCRS = crsFactory.createFromName("EPSG:4326"); // WGS84
@@ -53,14 +51,22 @@ public class Utils {
         return Math.abs(point1.x - point2.x) < EPSILON && Math.abs(point1.y - point2.y) < EPSILON;
     }
 
-    static double getDriftAngle()  {
+    static double getDriftAngle(double sigma, double maxAngle)  {
         random = new Random();
-        return random.nextGaussian () * 1.5;
+        double data = random.nextGaussian () * sigma;
+        return (data + 3 * sigma) / (6 * sigma) * 2 * maxAngle - maxAngle;
     }
       static String formatSpacialPoint(Point point, int precision ) {
         String floatSpec = "%." + String.valueOf(precision) + "f";
         String format = "Lat. " + floatSpec + " Long. " + floatSpec;
         return String.format(format, point.getLat(), point.getLon());
+    }
+
+    static double RadianToAzimuth( double radian) {
+        double angleDegrees = Math.toDegrees(radian);
+        double cwAngle = (360 - angleDegrees) % 360;
+        double rotatedCwAngle = (cwAngle + 90) % 360;
+        return rotatedCwAngle;
     }
 
 }

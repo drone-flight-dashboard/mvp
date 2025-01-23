@@ -16,12 +16,12 @@ public class Main {
     public static void main(String[] args) {
         Point point1 = shapeFactory.pointLatLon(0, 0); 
 
-        Point point2 = shapeFactory.pointLatLon(0, 0.2); 
-        Point point3 = shapeFactory.pointLatLon(0.2, 0.2); 
+        Point point2 = shapeFactory.pointLatLon(0, 0.05); 
+        Point point3 = shapeFactory.pointLatLon(1, 0.05); 
 
         //Route route = new Route(List.of(point1, point2, point3));
         FlightImitation flightImitation = new FlightImitation(List.of(point1, point2, point3));
-        for(Point point: flightImitation) {
+        for (Point point: flightImitation) {
 
         }
     }
