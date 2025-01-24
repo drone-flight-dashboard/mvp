@@ -12,8 +12,12 @@ public class FlightImitation implements Iterable<Point> {
     static private final double NEXT_POINT_DELTA_METERS = 50;
     static private final double NEXT_POINT_DELTA_DEG = NEXT_POINT_DELTA_METERS / 1000 * KM_TO_DEG;
     Route route;
+    String droneName;
+    long txInterval;
 
-    public FlightImitation(List<Point> routePoints) {
+    public FlightImitation(List<Point> routePoints, String droneName, Long txInterval) {
+        this.droneName = droneName;
+        this.txInterval = txInterval;
         route = new Route(routePoints);
     }
 
