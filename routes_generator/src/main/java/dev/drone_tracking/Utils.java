@@ -1,9 +1,5 @@
 package dev.drone_tracking;
-
-import static org.locationtech.spatial4j.distance.DistanceUtils.KM_TO_DEG;
-
 import java.util.Random;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.proj4j.CRSFactory;
