@@ -1,5 +1,7 @@
 package dev.drone_tracking;
+import dev.drone_tracking.dto.DroneTrackPositionData;
 
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.spatial4j.shape.Point;
 
 import static org.locationtech.spatial4j.distance.DistanceUtils.KM_TO_DEG;
@@ -7,6 +9,8 @@ import static org.locationtech.spatial4j.distance.DistanceUtils.KM_TO_DEG;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class FlightImitation implements Iterable<Point> {
     static private final double NEXT_POINT_DELTA_METERS = 50;
@@ -20,6 +24,24 @@ public class FlightImitation implements Iterable<Point> {
         this.txInterval = txInterval;
         route = new Route(routePoints);
     }
+
+    public Stream<DroneTrackPositionData> getDTOStream() {
+        Stream<Point> streamOfPoints = StreamSupport.stream(this.spliterator(), false);
+
+        return streamOfPoints
+            .peek(point -> {
+                try {
+                    Thread.sleep(txInterval);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            })
+            .map(point -> {
+                Coordinate webMercatorCoord = Utils.convertFromWG84ToWebMercator(point);
+                return new DroneTrackPositionData(droneName, webMercatorCoord.getX(), webMercatorCoord.getY());
+            });
+    }
+    
 
     @Override
     public Iterator<Point> iterator() {
