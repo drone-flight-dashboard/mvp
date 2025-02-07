@@ -26,17 +26,14 @@ Resources:
             Path: /hello
             Method: get
       VpcConfig:
-        SecurityGroupIds:
-          - !Ref MySecurityGroup
         SubnetIds:
-          - !Sub "{{resolve:ssm:/aws/service/global-infrastructure/subnets/default/subnet-0}}"
-          - !Sub "{{resolve:ssm:/aws/service/global-infrastructure/subnets/default/subnet-1}}"
-  
-  MySecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      VpcId: !Sub "{{resolve:ssm:/aws/service/global-infrastructure/vpcs/default}}"
-      GroupDescription: "Lambda Security Group for Default VPC"
+          - "subnet-0fee7c42543d308ef"
+          - "subnet-0901b01b6e1f25a26"
+        SecurityGroupIds:
+          - "sg-0a422105cec768210"
+      Environment:
+        Variables:
+          REDIS_HOST: clustercfg.redis.ri1ocn.euc1.cache.amazonaws.com
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function

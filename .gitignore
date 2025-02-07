@@ -1,4 +1,4 @@
 .vscode/
 .DS_Store
 routes_generator/target/
-
+node_redis/

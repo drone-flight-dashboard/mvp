@@ -15,6 +15,9 @@ importers:
         specifier: ^5.4.2
         version: 5.4.2
     devDependencies:
+      '@types/node':
+        specifier: ^22.13.0
+        version: 22.13.0
       chai:
         specifier: ^4.3.6
         version: 4.5.0
@@ -26,6 +29,9 @@ packages:
 
   '@ioredis/commands@1.2.0':
     resolution: {integrity: sha512-Sx1pU8EM64o2BrqNpEO1CNLtKQwyhuXuqyfH7oGKCk+1a33d2r5saW8zNwm3j6BTExtjrv2BxTgzzkMwts6vGg==}
+
+  '@types/node@22.13.0':
+    resolution: {integrity: sha512-ClIbNe36lawluuvq3+YYhnIN2CELi+6q8NpnM7PYp4hBn/TatfboPgVSm2rwKRfnV2M+Ty9GWDFI64KEe+kysA==}
 
   ansi-colors@4.1.3:
     resolution: {integrity: sha512-/6w/C21Pm1A7aZitlI5Ni/2J6FFQN8i1Cvz3kHABAAbw93v/NlvKdVOqz7CCWz/3iv/JplRSEEZ83XION15ovw==}
@@ -371,6 +377,9 @@ packages:
     resolution: {integrity: sha512-Acylog8/luQ8L7il+geoSxhEkazvkslg7PSNKOX59mbB9cOveP5aq9h74Y7YU8yDpJwetzQQrfIwtf4Wp4LKcw==}
     engines: {node: '>=4'}
 
+  undici-types@6.20.0:
+    resolution: {integrity: sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg==}
+
   workerpool@6.5.1:
     resolution: {integrity: sha512-Fs4dNYcsdpYSAfVxhnl1L5zTksjvOJxtC5hzMNl+1t9B8hTJTdKDyZ5ju7ztgPy+ft9tBFXoOlDNiOT9WUXZlA==}
 
@@ -404,6 +413,10 @@ packages:
 snapshots:
 
   '@ioredis/commands@1.2.0': {}
+
+  '@types/node@22.13.0':
+    dependencies:
+      undici-types: 6.20.0
 
   ansi-colors@4.1.3: {}
 
@@ -731,6 +744,8 @@ snapshots:
       is-number: 7.0.0
 
   type-detect@4.1.0: {}
+
+  undici-types@6.20.0: {}
 
   workerpool@6.5.1: {}
 
