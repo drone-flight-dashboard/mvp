@@ -31,9 +31,16 @@ Resources:
           - "subnet-0901b01b6e1f25a26"
         SecurityGroupIds:
           - "sg-0a422105cec768210"
+        Policies:
+        - Statement:
+            Effect: Allow
+            Action:
+              - ssm:GetParameter
+            Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/drone-tracking-app/db-uri"
       Environment:
         Variables:
           REDIS_HOST: clustercfg.redis.ri1ocn.euc1.cache.amazonaws.com
+          DB_PASSWORD_PARAM: "/drone-tracking-app/db-uri"
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function

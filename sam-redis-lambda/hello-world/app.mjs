@@ -17,7 +17,7 @@ let client;
 export const lambdaHandler = async (event, context) => {
   if (!client) {
     client = new Redis.Cluster(
-      [{ host: 'clustercfg.redis.ri1ocn.euc1.cache.amazonaws.com', port: 6379 }],
+      [{ host: process.env.REDIS_HOST, port: 6379 }],
       {
         dnsLookup: (address, callback) => callback(null, address),
         redisOptions: {
