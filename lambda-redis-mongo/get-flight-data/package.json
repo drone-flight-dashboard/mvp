@@ -13,12 +13,17 @@
     "test": "npm run compile && npm run unit"
   },
   "dependencies": {
-    "esbuild": "^0.14.14"
+    "@aws-sdk/client-ssm": "^3.750.0",
+    "esbuild": "^0.14.14",
+    "ioredis": "^5.5.0",
+    "mongodb": "^6.13.0",
+    "pino": "^9.6.0",
+    "pino-lambda": "^4.4.1"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.92",
-    "@types/jest": "^29.2.0",
     "@jest/globals": "^29.2.0",
+    "@types/aws-lambda": "^8.10.147",
+    "@types/jest": "^29.2.0",
     "@types/node": "^20.5.7",
     "@typescript-eslint/eslint-plugin": "^5.10.2",
     "@typescript-eslint/parser": "^5.10.2",
