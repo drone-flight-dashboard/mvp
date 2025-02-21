@@ -10,6 +10,9 @@ Parameters:
   DbUriParameterName:
     Type: String
     Default: "/drone-tracking-app/db-uri"
+  RedisHostName:
+    Type: String
+    Default: "clustercfg.redis.ri1ocn.euc1.cache.amazonaws.com"
 
 Globals:
   Function:
@@ -88,7 +91,7 @@ Resources:
             ParameterName: !Ref DbUriParameterName
       Environment:
         Variables:
-          REDIS_HOST: clustercfg.redis.ri1ocn.euc1.cache.amazonaws.com
+          REDIS_HOST: !Ref RedisHostName
           PARAMETER_NAME: !Ref DbUriParameterName
           LOG_LEVEL: trace
 
