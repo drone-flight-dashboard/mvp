@@ -69,7 +69,7 @@ Resources:
     Properties:
       SubnetId: !Ref LambdaSubnetAZ1
       RouteTableId: !Ref PrivateRouteTable
-  HelloWorldFunction:
+  GetFlightDataFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: get-flight-data/
@@ -101,6 +101,11 @@ Resources:
         Sourcemap: true
         EntryPoints: 
         - src/app.ts
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${GetFlightDataFunction}"
+      RetentionInDays: 7
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
