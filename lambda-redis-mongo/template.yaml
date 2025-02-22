@@ -13,6 +13,12 @@ Parameters:
   RedisHostName:
     Type: String
     Default: "clustercfg.redis.ri1ocn.euc1.cache.amazonaws.com"
+  FlightRowDataTableName:
+    Type: String
+    Default: "row_flight_data"
+  LastPacketTimestampTableName:
+    Type: String
+    Default: "last_packet_timestamp"
 
 Globals:
   Function:
@@ -73,8 +79,9 @@ Resources:
       SubnetId: !Ref LambdaSubnetAZ1
       RouteTableId: !Ref PrivateRouteTable
   GetFlightDataFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Type: AWS::Serverless::Function
     Properties:
+      FunctionName: getFlightData
       CodeUri: get-flight-data/
       Handler: src/app.lambdaHandler
       Runtime: nodejs20.x
@@ -104,6 +111,33 @@ Resources:
         Sourcemap: true
         EntryPoints: 
         - src/app.ts
+  WriteLastPacketTimestampFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: writeLastPacketTimestamp
+      Runtime: nodejs20.x
+      CodeUri: write-last-packet-timestamp/
+      Handler: src/app.lambdaHandler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref FlightRowDataTableName
+        - DynamoDBWritePolicy:
+            TableName: !Ref LastPacketTimestampTableName
+      Environment:
+        Variables:
+          ROW_DATA_TABLE: !Ref FlightRowDataTableName
+          TIMESTAMP_TABLE: !Ref LastPacketTimestampTableName
+          LOG_LEVEL: trace
+      Events:
+        DynamoDBStream:
+          Type: DynamoDB
+          Properties:
+            Stream: !GetAtt FlightRowDataTableName.StreamArn
+            StartingPosition: TRIM_HORIZON
+            BatchSize: 5
+            FilterCriteria:
+              Filters:
+                - Pattern: '{"eventName": ["INSERT"]}'  # Only process INSERT events
   LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
