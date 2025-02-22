@@ -1,5 +1,7 @@
 package dev.drone_tracking.dto;
 import org.json.JSONObject;
+
+import dev.drone_tracking.DynamoInteraction.RowFlightData;
 public record DroneTrackPositionData(String droneName, double x, double y) {
     final private static String DRONE_ID = "droneName";
     final private static String X_COORD = "x";
@@ -17,6 +19,14 @@ public record DroneTrackPositionData(String droneName, double x, double y) {
         jsonObject.put(X_COORD, x);
         jsonObject.put(Y_COORD, y);
         return jsonObject.toString();
+    }
+
+    public RowFlightData getRowFlightData() {
+        RowFlightData rowFlightData = new RowFlightData();
+        rowFlightData.setDroneId(droneName);
+        rowFlightData.setX(x);
+        rowFlightData.setY(y);
+        return rowFlightData;
     }
 
 }

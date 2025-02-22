@@ -10,6 +10,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.*;
 import dev.drone_tracking.dto.DroneTrackPositionData;
+import  dev.drone_tracking.DynamoInteraction.DynamoClient;
 
 
 public class Main {
@@ -19,7 +20,9 @@ public class Main {
     private static final int PORT = 5010;
     static private final int POINTS_QTY = 600;
     static DatagramSocket socket;
+    static private final DynamoClient dynamoWriter = new DynamoClient();
    
+
     
     public static void main(String[] args) {
         try {
@@ -38,6 +41,7 @@ public class Main {
     }
 
     private static void sendPoint(DroneTrackPositionData dtoToSend) {
+        dynamoWriter.putData(dtoToSend);
         byte[] buffer = dtoToSend.toString().getBytes();
         try {
 			DatagramPacket packet =
