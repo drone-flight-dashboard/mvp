@@ -21,6 +21,7 @@ const TIMESTAMP_TABLE_NAME = process['env']?.TIMESTAMP_TABLE;
 const ERROR_MESS_BAD_TIMESTAMP = `Error putting item in ${TIMESTAMP_TABLE_NAME} table: timestamp is undefined`;
 const DRONE_ID_ABSENT_ERROR_MESS = `Error putting item in ${TIMESTAMP_TABLE_NAME} table: drone_id is undefined`;
 const NEW_IMAGE_ABSENT_ERROR_MESS = 'Error processing DynamoDb stream: expecting NewImage but it is absent';
+
 export const lambdaHandler = async (event: DynamoDBStreamEvent, context: Context) => {
     if (isColdStart) {
         logger.trace(`Cold start detected`);
@@ -38,8 +39,9 @@ async function putItemIntoTable(
     newImage: { [key: string]: import('aws-lambda').AttributeValue } | undefined,
 ): Promise<void> {
     try {
+        logger.trace(`Entering putItemIntoTable`);
         const parametersForInsert: { droneId: string; timestamp: string } = getParameters(newImage);
-
+        logger.trace(`getParameters returns ${JSON.stringify(parametersForInsert)}`);
         const params = {
             TableName: ROW_FLIGHT_DATA_TABLE_NAME,
             Item: {
@@ -49,9 +51,9 @@ async function putItemIntoTable(
         };
         const command = new PutItemCommand(params);
         const data = await client.send(command);
-        console.log('result : ' + JSON.stringify(data));
+        logger.trace('Result of DymanoDb API send command : ' + JSON.stringify(data));
     } catch (error) {
-        console.error('Error:', error);
+        logger.error('Error:', error);
     }
 }
 

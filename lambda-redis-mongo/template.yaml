@@ -19,6 +19,9 @@ Parameters:
   LastPacketTimestampTableName:
     Type: String
     Default: "last_packet_timestamp"
+  RowFlightDataStreamArn:
+    Type: String
+    Default: "arn:aws:dynamodb:eu-central-1:585008087954:table/row_flight_data/stream/2025-02-22T14:40:47.896"
 
 Globals:
   Function:
@@ -119,8 +122,9 @@ Resources:
       CodeUri: write-last-packet-timestamp/
       Handler: src/app.lambdaHandler
       Policies:
-        - DynamoDBReadPolicy:
+        - DynamoDBStreamReadPolicy:
             TableName: !Ref FlightRowDataTableName
+            StreamName: !Ref RowFlightDataStreamArn
         - DynamoDBWritePolicy:
             TableName: !Ref LastPacketTimestampTableName
       Environment:
@@ -132,7 +136,7 @@ Resources:
         DynamoDBStream:
           Type: DynamoDB
           Properties:
-            Stream: !GetAtt FlightRowDataTableName.StreamArn
+            Stream: !Ref RowFlightDataStreamArn
             StartingPosition: TRIM_HORIZON
             BatchSize: 5
             FilterCriteria:
