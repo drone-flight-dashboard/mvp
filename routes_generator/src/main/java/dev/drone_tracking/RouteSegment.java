@@ -1,17 +1,13 @@
 package dev.drone_tracking;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.MultiPoint;
 import org.locationtech.jts.operation.distance.DistanceOp;
 import org.locationtech.jts.algorithm.Angle;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
 
 import static dev.drone_tracking.Utils.*;
 
-import java.util.ArrayList;
-import java.util.List;
 
 public class RouteSegment {
   
