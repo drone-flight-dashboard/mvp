@@ -16,7 +16,7 @@ import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
 import { AttributeValue, Context, DynamoDBStreamEvent } from 'aws-lambda';
 let isColdStart = true;
 const client = new DynamoDBClient({});
-const ROW_FLIGHT_DATA_TABLE_NAME = process['env']?.ROW_DATA_TABLE;
+
 const TIMESTAMP_TABLE_NAME = process['env']?.TIMESTAMP_TABLE;
 const ERROR_MESS_BAD_TIMESTAMP = `Error putting item in ${TIMESTAMP_TABLE_NAME} table: timestamp is undefined`;
 const DRONE_ID_ABSENT_ERROR_MESS = `Error putting item in ${TIMESTAMP_TABLE_NAME} table: drone_id is undefined`;
@@ -43,16 +43,19 @@ async function putItemIntoTable(
         const parametersForInsert: { droneId: string; timestamp: string } = getParameters(newImage);
         logger.trace(`getParameters returns ${JSON.stringify(parametersForInsert)}`);
         const params = {
-            TableName: ROW_FLIGHT_DATA_TABLE_NAME,
+            TableName: TIMESTAMP_TABLE_NAME,
             Item: {
                 drone_id: { S: parametersForInsert.droneId },
                 timestamp: { N: parametersForInsert.timestamp },
             },
         };
+        logger.trace(`Params is prepared: ${JSON.stringify(params)}`);
         const command = new PutItemCommand(params);
+        logger.trace(`Sending PutItemCommand`);
         const data = await client.send(command);
         logger.trace('Result of DymanoDb API send command : ' + JSON.stringify(data));
     } catch (error) {
+        logger.trace('Exception while workoing with DynamoDB');
         logger.error('Error:', error);
     }
 }

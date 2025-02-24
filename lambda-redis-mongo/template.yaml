@@ -120,11 +120,11 @@ Resources:
       CodeUri: write-last-packet-timestamp/
       Handler: src/app.lambdaHandler
       Policies:
-        - DynamoDBStreamReadPolicy:
-            TableName: !Ref FlightRowDataTableName
-            StreamName: !Ref RowFlightDataStreamArn
-        - DynamoDBWritePolicy:
-            TableName: !Ref LastPacketTimestampTableName
+      - DynamoDBStreamReadPolicy:
+          TableName: !Ref FlightRowDataTableName
+          StreamName: !Ref RowFlightDataStreamArn
+      - DynamoDBWritePolicy:
+          TableName: !Ref LastPacketTimestampTableName
       Environment:
         Variables:
           ROW_DATA_TABLE: !Ref FlightRowDataTableName

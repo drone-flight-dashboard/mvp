@@ -17,6 +17,11 @@ lint = true
 capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
 resolve_s3 = true
+stack_name = "lambda-dynamoDb"
+s3_prefix = "lambda-dynamoDb"
+region = "eu-central-1"
+parameter_overrides = "DbUriParameterName=\"/drone-tracking-app/db-uri\" RedisHostName=\"clustercfg.redis.ri1ocn.euc1.cache.amazonaws.com\" FlightRowDataTableName=\"row_flight_data\" LastPacketTimestampTableName=\"last_packet_timestamp\" RowFlightDataStreamArn=\"arn:aws:dynamodb:eu-central-1:585008087954:table/row_flight_data/stream/2025-02-22T14:40:47.896\""
+image_repositories = []
 
 [default.package.parameters]
 resolve_s3 = true
