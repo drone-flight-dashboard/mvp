@@ -41,6 +41,7 @@ async function putItemIntoTable(
     try {
         logger.trace(`Entering putItemIntoTable`);
         const parametersForInsert: { droneId: string; timestamp: string } = getParameters(newImage);
+        logger.trace(`Delay between timestamp and handling event: ${diffBetweenWasAndNow(newImage?.timestamp)}`);
         logger.trace(`getParameters returns ${JSON.stringify(parametersForInsert)}`);
         const params = {
             TableName: TIMESTAMP_TABLE_NAME,
@@ -53,11 +54,23 @@ async function putItemIntoTable(
         const command = new PutItemCommand(params);
         logger.trace(`Sending PutItemCommand`);
         const data = await client.send(command);
+        logger.trace(
+            `Delay between timestamp and  recieving a response from DDb: ${diffBetweenWasAndNow(newImage?.timestamp)}`,
+        );
         logger.trace('Result of DymanoDb API send command : ' + JSON.stringify(data));
     } catch (error) {
         logger.trace('Exception while workoing with DynamoDB');
         logger.error('Error:', error);
     }
+}
+function diffBetweenWasAndNow(timestamp: AttributeValue | undefined): number {
+    if (timestamp?.S === undefined) {
+        logger.error(ERROR_MESS_BAD_TIMESTAMP);
+        throw new Error(ERROR_MESS_BAD_TIMESTAMP);
+    }
+    const date = new Date(timestamp.S);
+    logger.trace(`timestamp: ${date.getTime()}, now: ${Date.now()}`);
+    return Date.now() - date.getTime();
 }
 
 function getUnixTimeStampSec(timestamp: AttributeValue | undefined): number {
