@@ -22,6 +22,14 @@ Parameters:
   RowFlightDataStreamArn:
     Type: String
     Default: "arn:aws:dynamodb:eu-central-1:585008087954:table/row_flight_data/stream/2025-02-22T14:40:47.896"
+  LastPacketTimestampStreamArn:
+    Type: String
+    Default: "arn:aws:dynamodb:eu-central-1:585008087954:table/last_packet_timestamp/stream/2025-03-08T18:51:56.232"
+  StepFunctionArn:
+    Type: String
+    Default: "arn:aws:states:eu-central-1:585008087954:stateMachine:TimeOutDetection"
+
+
 
 Globals:
   Function:
@@ -179,6 +187,44 @@ Resources:
         Sourcemap: true
         EntryPoints: 
         - src/app.ts
+  InitTimeoutDetectionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: initTimeoutDetection
+      Runtime: nodejs20.x
+      CodeUri: init-timeout-detection/
+      Handler: src/app.lambdaHandler
+      Policies:
+      - DynamoDBStreamReadPolicy:
+          TableName: !Ref LastPacketTimestampTableName
+          StreamName: !Ref LastPacketTimestampStreamArn
+      - StepFunctionsExecutionPolicy:
+          StateMachineName: TimeOutDetection
+      Environment:
+        Variables:
+          LOG_LEVEL: trace
+          SFN_ARN: !Ref StepFunctionArn
+      Events:
+        DynamoDBStream:
+          Type: DynamoDB
+          Properties:
+            Stream: !Ref LastPacketTimestampStreamArn
+            StartingPosition: TRIM_HORIZON
+            BatchSize: 5
+            FilterCriteria:
+              Filters:
+                - Pattern: '{"eventName": ["INSERT"]}'  # Only process INSERT events
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - src/app.ts
+
+
+  
   LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:

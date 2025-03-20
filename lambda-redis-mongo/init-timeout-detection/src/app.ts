@@ -11,16 +11,26 @@
  *
  */
 import { logger, withRequest } from './loggerInit';
-import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
+
+import { SFNClient, StartExecutionCommand } from '@aws-sdk/client-sfn';
 
 import { AttributeValue, Context, DynamoDBStreamEvent } from 'aws-lambda';
-let isColdStart = true;
-const client = new DynamoDBClient({});
+import type { MiddlewareStack, SerializeMiddleware, HandlerExecutionContext } from '@smithy/types';
 
+let isColdStart = true;
 const TIMESTAMP_TABLE_NAME = process['env']?.TIMESTAMP_TABLE;
 const ERROR_MESS_BAD_TIMESTAMP = `Error putting item in ${TIMESTAMP_TABLE_NAME} table: timestamp is undefined`;
 const DRONE_ID_ABSENT_ERROR_MESS = `Error putting item in ${TIMESTAMP_TABLE_NAME} table: drone_id is undefined`;
 const NEW_IMAGE_ABSENT_ERROR_MESS = 'Error processing DynamoDb stream: expecting NewImage but it is absent';
+const STEP_FUNCTION_ARN = process['env']?.SFN_ARN;
+
+const loggingMiddleware = (next: any, context: HandlerExecutionContext) => async (args: any) => {
+    logger.trace('RequesT: ' + JSON.stringify(args.request));
+    const result = await next(args);
+    logger.trace('Response: ' + JSON.stringify(result));
+    return result;
+};
+const sfnClient = new SFNClient();
 
 export const lambdaHandler = async (event: DynamoDBStreamEvent, context: Context) => {
     if (isColdStart) {
@@ -31,67 +41,51 @@ export const lambdaHandler = async (event: DynamoDBStreamEvent, context: Context
     }
     withRequest(event, context);
     context.callbackWaitsForEmptyEventLoop = false;
-    event.Records.filter((record) => record.eventName === 'INSERT').forEach((record) =>
-        putItemIntoTable(record?.dynamodb?.NewImage),
+
+    for (const record of event.Records.filter((record) => record.eventName === 'INSERT')) {
+        await startStepFunction(record?.dynamodb?.NewImage);
+    }
+    event.Records.filter((record) => record.eventName === 'INSERT').forEach(
+         async (record) => await startStepFunction(record?.dynamodb?.NewImage),
     );
+    logger.trace(`command sent`);
 };
-async function putItemIntoTable(
+async function runStepFunction(sfnClient: SFNClient, stateMachineArn: string, inputJSON: string) {
+    logger.trace(`Entering runStepFunction with stateMachineArn: ${stateMachineArn}`);
+    const res = await sfnClient.send(new StartExecutionCommand({ stateMachineArn, input: inputJSON }));
+    logger.trace(`Entering sfn send returns: ${JSON.stringify(res)}`);
+}
+async function startStepFunction(
     newImage: { [key: string]: import('aws-lambda').AttributeValue } | undefined,
 ): Promise<void> {
     try {
-        logger.trace(`Entering putItemIntoTable`);
-        const parametersForInsert: { droneId: string; timestamp: string } = getParameters(newImage);
-        logger.trace(`Delay between timestamp and handling event: ${diffBetweenWasAndNow(newImage?.timestamp)}`);
-        logger.trace(`getParameters returns ${JSON.stringify(parametersForInsert)}`);
-        const params = {
-            TableName: TIMESTAMP_TABLE_NAME,
-            Item: {
-                drone_id: { S: parametersForInsert.droneId },
-                timestamp: { N: parametersForInsert.timestamp },
-            },
-        };
-        logger.trace(`Params is prepared: ${JSON.stringify(params)}`);
-        const command = new PutItemCommand(params);
-        logger.trace(`Sending PutItemCommand`);
-        const data = await client.send(command);
-        logger.trace(
-            `Delay between timestamp and  recieving a response from DDb: ${diffBetweenWasAndNow(newImage?.timestamp)}`,
-        );
-        logger.trace('Result of DymanoDb API send command : ' + JSON.stringify(data));
+        if (!newImage) {
+            await runStepFunction(sfnClient, STEP_FUNCTION_ARN || '', JSON.stringify({ timeout: 15, flightId: 'xxx' }));
+        } else {
+            logger.trace(`Entering startStepFunction`);
+            const parametersForExecution: { flightId: string; timeout: number } = getParameters(newImage);
+            logger.trace(`getParameters returns ${JSON.stringify(parametersForExecution)}`);
+            logger.trace(`Sending StartExecutionCommand for sfnArn: ${STEP_FUNCTION_ARN || ''}`);
+            await runStepFunction(sfnClient, STEP_FUNCTION_ARN || '', JSON.stringify(parametersForExecution));
+            logger.trace(`sent StartExecutionCommand}`);
+        }
     } catch (error) {
-        logger.trace('Exception while workoing with DynamoDB');
+        logger.trace('Exception while workoing with StepFunction API');
         logger.error('Error:', error);
     }
 }
-function diffBetweenWasAndNow(timestamp: AttributeValue | undefined): number {
-    if (timestamp?.S === undefined) {
-        logger.error(ERROR_MESS_BAD_TIMESTAMP);
-        throw new Error(ERROR_MESS_BAD_TIMESTAMP);
-    }
-    const date = new Date(timestamp.S);
-    logger.trace(`timestamp: ${date.getTime()}, now: ${Date.now()}`);
-    return Date.now() - date.getTime();
-}
 
-function getUnixTimeStampSec(timestamp: AttributeValue | undefined): number {
-    if (timestamp?.S === undefined) {
-        logger.error(ERROR_MESS_BAD_TIMESTAMP);
-        throw new Error(ERROR_MESS_BAD_TIMESTAMP);
-    }
-    const date = new Date(timestamp.S);
-    return Math.floor(date.getTime() / 1000);
-}
 function getParameters(newImage: { [key: string]: AttributeValue } | undefined): {
-    droneId: string;
-    timestamp: string;
+    flightId: string;
+    timeout: number;
 } {
     if (newImage === undefined) {
         logger.error(NEW_IMAGE_ABSENT_ERROR_MESS);
         throw new Error(NEW_IMAGE_ABSENT_ERROR_MESS);
     }
     const droneId: string = getDroneId(newImage.drone_id);
-    const timestamp: string = getUnixTimeStampSec(newImage.timestamp).toString();
-    return { droneId, timestamp };
+
+    return { flightId: droneId, timeout: 15 };
 }
 
 function getDroneId(droneIdAttr: AttributeValue | undefined): string {
